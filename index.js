@@ -14,7 +14,7 @@ dotenv.config();
 
 const app = express();
 
-const PORT = process.env.PORT;
+const PORT = 5050;
 const MONGO_URL = process.env.ATLAS_URL;
 
 const corsOptions = {

@@ -22,7 +22,7 @@ export async function generateNewVerificationCode(userData) {
             secure: true,
             auth: {
                 user: process.env.EMAIL,
-                pass: process.env.PASSWORD,
+                pass: process.env.EMAIL_PASSWORD,
             },
         });
     

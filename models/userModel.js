@@ -32,6 +32,10 @@ const UserSchema = new Schema({
         default: false,
         required: true
     },
+    role: {
+        type: Schema.Types.String,
+        default: 'user',
+    },
 
 });
 
