@@ -21,7 +21,7 @@ export async function generateNewVerificationCode(userData) {
             port: 465,
             secure: true,
             auth: {
-                user: process.env.EMAIL,
+                user: "easytrack.autoreply@gmail.com",
                 pass: process.env.EMAIL_PASSWORD,
             },
         });
