@@ -4,9 +4,8 @@ import cors from "cors";
 import mongoose from "mongoose";
 import userRouter from "./routes/users.route.js";
 import authRouter from "./routes/auth.route.js";
+import recordRouter from "./routes/records.route.js";
 import cookieParser from "cookie-parser";
-import session from "express-session";
-import passport from "passport";
 import "./strategies/local-strategy.js";
 
 
@@ -28,20 +27,9 @@ app.use(cors(corsOptions));
 
 app.use(cookieParser());
 
-// app.use(session({
-//     secret:"EasyTrackSecretKey",
-//     saveUninitialized: false,
-//     resave: false,
-//     cookie: {
-//         maxAge: 1000 * 60 * 60,
-//     }
-// }));
-
-// app.use(passport.initialize());
-// app.use(passport.session());
-
 app.use(userRouter);
 app.use(authRouter);
+app.use(recordRouter);
 
 // start the Express server
 app.listen(PORT, () => {

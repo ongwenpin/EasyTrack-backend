@@ -1,6 +1,5 @@
 import { Router } from "express";
 import { User } from "../models/userModel.js";
-import passport from "passport";
 import bcryptjs from "bcryptjs";
 import { verifyToken } from "../middleware.js";
 import { generateNewVerificationCode } from "../utils/verification.js";
@@ -14,10 +13,10 @@ dotenv.config();
 router.get("/api/users", verifyToken, async (req, res) => {
     try {
         const users = await User.find();
-        res.status(200).send(users);
+        return res.status(200).send(users);
 
     } catch (err) {
-        res.status(400).send(err.message);
+        return res.status(400).send(err.message);
     }
 });
 
@@ -26,10 +25,10 @@ router.get("/api/users/:username", verifyToken, async (req, res) => {
     try {
         const username = req.params.username;
         const user = await User.findOne({username: username});
-        res.status(200).send(user);
+        return res.status(200).send(user);
 
     } catch {
-        res.status(400).send(err.message);
+        return res.status(400).send(err.message);
     }
 });
 
@@ -69,20 +68,20 @@ router.patch("/api/users/:username", verifyToken, async (req, res) => {
         const username = req.params.username;
         const updatedUser = await User.findOneAndUpdate({username: username}, req.body, {new: true});
         const {password, ...user} = updatedUser.toObject();
-        res.status(200).send(user);
+        return res.status(200).send(user);
     } catch (err) {
-        res.status(400).send(err.message);
+        return res.status(400).send(err.message);
     }
 });
 
-//DELETE a user
+// DELETE a user
 router.delete("/api/users/:username", verifyToken, async (req, res) => {
     try {
         const username = req.params.username;
         const user = await User.findOneAndDelete({username: username});
-        res.status(200).send("User deleted successfully");
+        return res.status(200).send("User deleted successfully");
     } catch (err) {
-        res.status(400).send(err.message);
+        return res.status(400).send(err.message);
     }
 });
 
