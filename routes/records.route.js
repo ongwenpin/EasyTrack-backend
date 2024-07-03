@@ -225,6 +225,7 @@ router.patch("/api/records/:id", verifyToken, upload.any(), async (req, res) => 
     for (let i = 0; i < earningBreakdownLength; i++) {
         const supportingImageKey = recordData[`earningBreakdown-supportingImageKey-${i}`];
 
+        // Supporting image did not changed
         if (supportingImageKey) {
             const newEarningBreakdown = {
                 name: recordData[`earningBreakdown-name-${i}`],
@@ -251,22 +252,22 @@ router.patch("/api/records/:id", verifyToken, upload.any(), async (req, res) => 
                     }
                 });
 
-                if (i < prevRecord.earningBreakdown.length) {
+                // if (i < prevRecord.earningBreakdown.length) {
 
-                    // Delete the previous image from s3 bucket if it exists
-                    const prevKey = prevRecord.earningBreakdown[i].supportingImage;
-                    if (prevKey) {
-                        await deleteFile(prevKey).then((result) => {
-                            if (result === "File deleted successfully") {
-                                return;
-                            } else {
-                                return res.status(500).send("Internal Server Error: Failed to delete image from s3 bucket");
-                            }
-                        }).catch((err) => {
-                            return res.status(500).send("Internal Server Error: Failed to delete image from s3 bucket");
-                        });
-                    }
-                }
+                //     // Delete the previous image from s3 bucket if it exists
+                //     const prevKey = prevRecord.earningBreakdown[i].supportingImage;
+                //     if (prevKey) {
+                //         await deleteFile(prevKey).then((result) => {
+                //             if (result === "File deleted successfully") {
+                //                 return;
+                //             } else {
+                //                 return res.status(500).send("Internal Server Error: Failed to delete image from s3 bucket");
+                //             }
+                //         }).catch((err) => {
+                //             return res.status(500).send("Internal Server Error: Failed to delete image from s3 bucket");
+                //         });
+                //     }
+                // }
 
             } else {
                 const newEarningBreakdown = {
@@ -276,8 +277,6 @@ router.patch("/api/records/:id", verifyToken, upload.any(), async (req, res) => 
                 allEarningBreakdowns.push(newEarningBreakdown);
             }
         }
-
-
     }
 
     const updatedRecord = {
@@ -292,11 +291,14 @@ router.patch("/api/records/:id", verifyToken, upload.any(), async (req, res) => 
     // Clean up the previous images from s3 bucket if they exist
 
     const currentSupportingImageKeys = allEarningBreakdowns.map((earningBreakdown) => earningBreakdown.supportingImage);
+    console.log(currentSupportingImageKeys);
 
-    for (let i = earningBreakdownLength; i < prevRecord.earningBreakdown.length; i++) {
+    for (let i = 0; i < prevRecord.earningBreakdown.length; i++) {
         const prevKey = prevRecord.earningBreakdown[i].supportingImage;
+        console.log(`Checking ${prevKey}`);
         
         if (!currentSupportingImageKeys.includes(prevKey)) {
+            console.log(`Deleting ${prevKey} from s3 bucket`);
             await deleteFile(prevKey).then((result) => {
                 if (result === "File deleted successfully") {
                     return;
