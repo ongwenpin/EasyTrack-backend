@@ -170,8 +170,8 @@ router.post("/api/records", verifyToken, upload.any(), async (req, res) => {
     });
 
     try {
-        await newRecord.save();
-        return res.status(201).send("Record created successfully" );
+        const record = await newRecord.save();
+        return res.status(201).send(record);
     } catch (err) {
         return res.status(400).send(err.message);
     }
