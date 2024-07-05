@@ -56,7 +56,7 @@ router.post("/api/auth", async (req, res) => {
         }
         const token = jwt.sign({id: validUser._id}, process.env.JWT_SECRET);
         const {password: userPassword, ...userData} = validUser.toObject();
-        return res.cookie('access_token', token, {httpOnly: true, maxAge: 1000 * 60 * 60 * 2, sameSite: "none"}).status(200).send(userData);
+        return res.cookie('access_token', token, {httpOnly: true, maxAge: 1000 * 60 * 60 * 2, sameSite: "strict"}).status(200).send(userData);
 
     } catch (err) {
         return res.status(500).send(err.message);
