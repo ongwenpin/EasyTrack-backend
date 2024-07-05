@@ -289,15 +289,15 @@ router.patch("/api/records/:id", verifyToken, upload.any(), async (req, res) => 
     }
 
     // Clean up the previous images from s3 bucket if they exist
-
-    const currentSupportingImageKeys = allEarningBreakdowns.map((earningBreakdown) => earningBreakdown.supportingImage);
-    console.log(currentSupportingImageKeys);
+    const currentSupportingImageKeys = allEarningBreakdowns
+        .map((earningBreakdown) => earningBreakdown.supportingImage)
+        .filter((key) => key);
+    
 
     for (let i = 0; i < prevRecord.earningBreakdown.length; i++) {
         const prevKey = prevRecord.earningBreakdown[i].supportingImage;
-        console.log(`Checking ${prevKey}`);
         
-        if (!currentSupportingImageKeys.includes(prevKey)) {
+        if (prevKey && !currentSupportingImageKeys.includes(prevKey)) {
             console.log(`Deleting ${prevKey} from s3 bucket`);
             await deleteFile(prevKey).then((result) => {
                 if (result === "File deleted successfully") {
