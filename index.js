@@ -5,8 +5,10 @@ import mongoose from "mongoose";
 import userRouter from "./routes/users.route.js";
 import authRouter from "./routes/auth.route.js";
 import recordRouter from "./routes/records.route.js";
+import analyticsRouter from "./routes/analytics.route.js";
 import cookieParser from "cookie-parser";
 import "./strategies/local-strategy.js";
+
 
 
 dotenv.config();
@@ -30,6 +32,7 @@ app.use(cookieParser());
 app.use(userRouter);
 app.use(authRouter);
 app.use(recordRouter);
+app.use(analyticsRouter);
 
 // start the Express server
 app.listen(PORT, () => {
