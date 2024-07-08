@@ -49,5 +49,7 @@ const RecordSchema = new Schema({
 
 });
 
+RecordSchema.index({ username: 'text', branch: 'text' });
+
 export { EarningBreakdownSchema }
 export const Record = mongoose.model('Record', RecordSchema, 'records');
