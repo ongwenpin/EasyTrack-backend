@@ -12,12 +12,27 @@ router.get("/api/analytics/dailyprofit", verifyToken, async (req, res) => {
     const records = await Record.find({
         date: date.toISOString().slice(0, 10),
     });
-    let profit = 0;
-    records.forEach((record) => {
-        profit += record.totalEarnings;
-    });
+    let branchProfits = { profit: 0 };
 
-    return res.status(200).send({ date: date.toISOString().slice(0, 10), profit: profit });
+    const distinctBranches = await Record.distinct("branch");
+    
+    for (let branch of distinctBranches) {
+        branchProfits[branch] = 0;
+    }
+
+    records.forEach((record) => {
+        const branch = record.branch;
+        const earnings = record.totalEarnings;
+
+        if (!branchProfits[branch]) {
+            branchProfits[branch] = 0;
+        }
+
+        branchProfits[branch] += earnings;
+        branchProfits.profit += earnings;
+    })
+
+    return res.status(200).send(branchProfits);
 })
 
 
