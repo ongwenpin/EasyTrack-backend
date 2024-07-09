@@ -2,6 +2,8 @@ import passport from "passport";
 import { Strategy } from "passport-local";
 import { User } from "../models/userModel.js";
 
+// Not in use
+
 // Serialize user
 passport.serializeUser((user, done) => {
     done(null, user.username);
