@@ -5,7 +5,7 @@ export const verifyToken = (req, res, next) => {
     // Verify token
     jwt.verify(getToken, process.env.JWT_SECRET, (err, success) => {
         if (err) {
-            return res.status(301).send("Unauthorized, Please Log in first");
+            return res.status(401).send("Unauthorized, Please Log in first");
         }
         next();
     });

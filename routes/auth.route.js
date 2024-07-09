@@ -68,7 +68,6 @@ router.post("/api/auth", async (req, res) => {
 // Log out a user
 router.get("/api/logout", async (req, res) => {
     res.clearCookie('access_token');
-    //res.cookie('access_token', 'none', {httpOnly: true, expires: new Date(Date.now() + 5 * 1000)})
     return res.status(200).send("Successfully logged out");
 });
 
