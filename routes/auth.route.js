@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import { UserVerification } from "../models/userVerificationModel.js";
 import { generateNewVerificationCode } from "../utils/verification.js";
+import crypto from "crypto";
 
 const router = Router();
 
@@ -56,7 +57,10 @@ router.post("/api/auth", async (req, res) => {
         }
         const token = jwt.sign({id: validUser._id}, process.env.JWT_SECRET);
         const {password: userPassword, ...userData} = validUser.toObject();
-        return res.cookie('access_token', token, {httpOnly: true, maxAge: 1000 * 60 * 60 * 2, sameSite: "strict"}).status(200).send(userData);
+
+        res.cookie('refresh_token', token, {httpOnly: true, maxAge: 1000 * 60 * 60 * 24, sameSite: "strict"});
+
+        return res.status(200).send(userData);
 
     } catch (err) {
         return res.status(500).send(err.message);
@@ -67,12 +71,13 @@ router.post("/api/auth", async (req, res) => {
 
 // Log out a user
 router.get("/api/logout", async (req, res) => {
+    res.clearCookie('refresh_token');
     res.clearCookie('access_token');
     return res.status(200).send("Successfully logged out");
 });
 
 router.get("/api/auth/status", async (req, res) => {
-    const getToken = req.cookies.access_token;
+    const getToken = req.cookies.refresh_token;
     // Verify token
     jwt.verify(getToken, process.env.JWT_SECRET, (err, success) => {
         if (err) {
@@ -81,6 +86,20 @@ router.get("/api/auth/status", async (req, res) => {
         return res.status(200).send("Authorized");
     });
 
+});
+
+router.get("/api/auth/access", async (req, res) => {
+    const getToken = req.cookies.refresh_token;
+    // Verify token
+    jwt.verify(getToken, process.env.JWT_SECRET, (err, success) => {
+        if (err) {
+            return res.status(401).send("Unauthorized");
+        }
+        const access_token_id = crypto.randomBytes(16).toString('hex');
+        const token = jwt.sign({id: access_token_id}, process.env.JWT_SECRET);
+        res.cookie('access_token', token, {httpOnly: true, maxAge: 1000 * 60 * 60, sameSite: "strict"});
+        return res.status(200).send("Access token granted");
+    });
 });
 
 export default router;

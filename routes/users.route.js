@@ -66,6 +66,10 @@ router.post("/api/users", verifyToken, async (req, res) => {
 router.patch("/api/users/:username", verifyToken, async (req, res) => {
     try {
         const username = req.params.username;
+        // Do not update password
+        if (req.body.password) {
+            delete req.body.password;
+        }
         const updatedUser = await User.findOneAndUpdate({username: username}, req.body, {new: true});
         const {password, ...user} = updatedUser.toObject();
         return res.status(200).send(user);
