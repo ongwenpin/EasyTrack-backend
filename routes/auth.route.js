@@ -6,6 +6,7 @@ import jwt from "jsonwebtoken";
 import { UserVerification } from "../models/userVerificationModel.js";
 import { generateNewVerificationCode } from "../utils/verification.js";
 import crypto from "crypto";
+import { UserAuth } from "../models/userAuthModel.js";
 
 const router = Router();
 
@@ -47,7 +48,8 @@ router.post("/api/auth", async (req, res) => {
     
     try {
         const {username, password} = req.body;
-        const validUser = await User.findOne({username: username});
+        //const validUser = await User.findOne({username: username});
+        const validUser = await UserAuth.findOne({username: username});
         if (!validUser) {
             return res.status(404).json({message:"User not found"});
         }
@@ -56,11 +58,14 @@ router.post("/api/auth", async (req, res) => {
             return res.status(401).json({message:"Wrong credentials"});
         }
         const token = jwt.sign({id: validUser._id}, process.env.JWT_SECRET);
-        const {password: userPassword, ...userData} = validUser.toObject();
+        //const {password: userPassword, ...userData} = validUser.toObject();
+
+        const userInfo = await User.findOne({_id: validUser.userID});
+
 
         res.cookie('refresh_token', token, {httpOnly: true, maxAge: 1000 * 60 * 60 * 24, sameSite: "strict"});
 
-        return res.status(200).send(userData);
+        return res.status(200).send(userInfo);
 
     } catch (err) {
         return res.status(500).send(err.message);
@@ -70,10 +75,18 @@ router.post("/api/auth", async (req, res) => {
 );
 
 // Log out a user
-router.get("/api/logout", async (req, res) => {
-    res.clearCookie('refresh_token');
-    res.clearCookie('access_token');
-    return res.status(200).send("Successfully logged out");
+router.post("/api/logout", async (req, res) => {
+    const username = req.body.username;
+    UserAuth.findOneAndUpdate({username: username}, {accessToken: ""}, {new: true})
+        .then(() => {
+            res.clearCookie('refresh_token');
+            res.clearCookie('access_token');
+            return res.status(200).send("Successfully logged out");
+        
+        })
+        .catch((err) => {
+            return res.status(400).send("Fail to log out");
+        });
 });
 
 router.get("/api/auth/status", async (req, res) => {
@@ -96,9 +109,17 @@ router.get("/api/auth/access", async (req, res) => {
             return res.status(401).send("Unauthorized");
         }
         const access_token_id = crypto.randomBytes(16).toString('hex');
-        const token = jwt.sign({id: access_token_id}, process.env.JWT_SECRET);
-        res.cookie('access_token', token, {httpOnly: true, maxAge: 1000 * 60 * 60, sameSite: "strict"});
-        return res.status(200).send("Access token granted");
+
+        UserAuth.findOneAndUpdate({_id: success.id}, {accessToken: access_token_id}, {new: true})
+            .then((userAuth) => {
+                const token = jwt.sign({access_id: access_token_id, id: userAuth.userID }, process.env.JWT_SECRET);
+                res.cookie('access_token', token, {httpOnly: true, maxAge: 1000 * 60 * 60, sameSite: "strict"});
+                return res.status(200).send("Access token granted");
+            }).
+            catch((err) => {
+                return res.status(400).send("Fail to create access token");
+            });
+
     });
 });
 

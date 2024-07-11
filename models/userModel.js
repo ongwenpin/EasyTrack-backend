@@ -11,10 +11,6 @@ const UserSchema = new Schema({
         type: Schema.Types.String,
         required: true,
     },
-    password: {
-        type: Schema.Types.String,
-        required: true
-    },
     branch: {
         type: Schema.Types.String,
         required: true
@@ -31,6 +27,7 @@ const UserSchema = new Schema({
     role: {
         type: Schema.Types.String,
         default: 'user',
+        required: true
     },
 
 });

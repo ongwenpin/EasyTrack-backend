@@ -4,6 +4,7 @@ import bcryptjs from "bcryptjs";
 import { verifyToken } from "../middleware.js";
 import { generateNewVerificationCode } from "../utils/verification.js";
 import dotenv from "dotenv";
+import { UserAuth } from "../models/userAuthModel.js";
 
 const router = Router();
 
@@ -37,14 +38,26 @@ router.post("/api/signup", async (req, res) => {
     
     const userData = req.body;
     const hashedPassword = bcryptjs.hashSync(userData.password, 10);
-    const newUser = new User({...userData, password: hashedPassword});
-    try {
-        await newUser.save();
-        await generateNewVerificationCode(userData);
-        return res.status(201).send({message: "User created successfully"});
-    } catch (err) {
-        return res.status(400).send(err.message);
-    }
+    const newUser = new User({ ...userData});
+
+    newUser.save()
+        .then((user) =>  {
+            const newUserAuth = new UserAuth({username: userData.username, password: hashedPassword, userID: user._id});
+            newUserAuth.save()
+        })
+        .then(() => {
+            generateNewVerificationCode(userData);
+            
+        })
+        .then(() => {
+            return res.status(201).send({message: "User created successfully"});
+        
+        })
+        .catch(
+            (err) => {
+                return res.status(400).send(err.errorResponse);
+            }
+        );
 
 });
 
@@ -52,27 +65,33 @@ router.post("/api/signup", async (req, res) => {
 router.post("/api/users", verifyToken, async (req, res) => {
     const userData = req.body;
     const hashedPassword = bcryptjs.hashSync(userData.password, 10);
-    const newUser = new User({...userData, password: hashedPassword});
-    try {
-        await newUser.save();
-        await generateNewVerificationCode(userData);
-        return res.status(201).send({message: "User created successfully"});
-    } catch (err) {
-        return res.status(400).send(err.message);
-    }
+    const newUser = new User({ ...userData});
+
+    newUser.save()
+        .then((user) =>  {
+            const newUserAuth = new UserAuth({username: userData.username, password: hashedPassword, userID: user._id});
+            newUserAuth.save()
+        })
+        .then(() => {
+            generateNewVerificationCode(userData);
+        })
+        .then(() => {
+            return res.status(201).send({message: "User created successfully"});
+        })
+        .catch(
+            (err) => {
+                return res.status(400).send(err.message);
+            }
+        );
 });
 
 // PATCH a user
 router.patch("/api/users/:username", verifyToken, async (req, res) => {
     try {
         const username = req.params.username;
-        // Do not update password
-        if (req.body.password) {
-            delete req.body.password;
-        }
         const updatedUser = await User.findOneAndUpdate({username: username}, req.body, {new: true});
-        const {password, ...user} = updatedUser.toObject();
-        return res.status(200).send(user);
+
+        return res.status(200).send(updatedUser);
     } catch (err) {
         return res.status(400).send(err.message);
     }
@@ -80,13 +99,17 @@ router.patch("/api/users/:username", verifyToken, async (req, res) => {
 
 // DELETE a user
 router.delete("/api/users/:username", verifyToken, async (req, res) => {
-    try {
-        const username = req.params.username;
-        const user = await User.findOneAndDelete({username: username});
-        return res.status(200).send("User deleted successfully");
-    } catch (err) {
-        return res.status(400).send(err.message);
-    }
+    const username = req.params.username;
+
+    User.findOneAndDelete({username: username})
+            .then(async (user) => {
+                await UserAuth.findOneAndDelete({username: username});
+            }).then(() => {
+                return res.status(200).send("User deleted successfully");
+            }).catch((err) => {
+                return res.status(400).send(err.message);
+            });
+    
 });
 
 export default router;
