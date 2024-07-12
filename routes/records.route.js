@@ -1,10 +1,12 @@
 import { Router } from "express";
-import { Record, EarningBreakdownSchema } from "../models/recordModel.js";
+import { Record } from "../models/recordModel.js";
 import { verifyToken } from "../middleware.js";
 import dotenv from "dotenv";
 import multer from "multer";
 import { uploadFile, generatePresignedUrl, deleteFile } from "../utils/s3_functions.js";
 import { v4 as uuidv4 } from 'uuid';
+import { User } from "../models/userModel.js";
+import { Notification } from "../models/notificationModel.js";
 
 const router = Router();
 
@@ -171,6 +173,24 @@ router.post("/api/records", verifyToken, upload.any(), async (req, res) => {
 
     try {
         const record = await newRecord.save();
+        
+        try {
+            const users = await User.find({role: "admin"});
+            const notifications = users.map((user) => {
+                return new Notification({
+                    username: user.username,
+                    message: `New record created by ${recordData.username} for ${recordData.date} at ${recordData.branch} branch.`,
+                    date: new Date(),
+                    isRead: false
+                });
+            });
+
+            await Notification.insertMany(notifications);
+
+        } catch (err) {
+            return res.status(500).send("Internal Server Error: Failed to create notifications for admins");
+        }
+        
         return res.status(201).send(record);
     } catch (err) {
         return res.status(400).send(err.message);
@@ -251,23 +271,6 @@ router.patch("/api/records/:id", verifyToken, upload.any(), async (req, res) => 
                         return res.status(500).send("Internal Server Error: Failed to upload image to s3 bucket");
                     }
                 });
-
-                // if (i < prevRecord.earningBreakdown.length) {
-
-                //     // Delete the previous image from s3 bucket if it exists
-                //     const prevKey = prevRecord.earningBreakdown[i].supportingImage;
-                //     if (prevKey) {
-                //         await deleteFile(prevKey).then((result) => {
-                //             if (result === "File deleted successfully") {
-                //                 return;
-                //             } else {
-                //                 return res.status(500).send("Internal Server Error: Failed to delete image from s3 bucket");
-                //             }
-                //         }).catch((err) => {
-                //             return res.status(500).send("Internal Server Error: Failed to delete image from s3 bucket");
-                //         });
-                //     }
-                // }
 
             } else {
                 const newEarningBreakdown = {

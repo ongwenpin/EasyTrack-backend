@@ -7,6 +7,7 @@ import authRouter from "./routes/auth.route.js";
 import recordRouter from "./routes/records.route.js";
 import analyticsRouter from "./routes/analytics.route.js";
 import searchRouter from "./routes/search.route.js";
+import notificationRouter from "./routes/notification.route.js";
 import cookieParser from "cookie-parser";
 import "./strategies/local-strategy.js";
 
@@ -35,6 +36,7 @@ app.use(authRouter);
 app.use(recordRouter);
 app.use(analyticsRouter);
 app.use(searchRouter);
+app.use(notificationRouter);
 
 // start the Express server
 app.listen(PORT, () => {
