@@ -94,7 +94,7 @@ router.get("/api/auth/status", async (req, res) => {
     // Verify token
     jwt.verify(getToken, process.env.JWT_SECRET, (err, success) => {
         if (err) {
-            return res.status(401).send("Unauthorized");
+            return res.status(401).send("Unauthorized: No refresh token found");
         }
         return res.status(200).send("Authorized");
     });
