@@ -12,11 +12,9 @@ const s3Client = new S3Client({
     },
 });
 
-const BUCKET_NAME = "easytrack-records";
-
-export async function uploadFile(file, key) {
+export async function uploadFile(file, key, bucketName) {
     const params = {
-        Bucket: BUCKET_NAME,
+        Bucket: bucketName,
         Key: key,
         Body: file.buffer,
         ContentType: file.mimetype,
@@ -32,9 +30,9 @@ export async function uploadFile(file, key) {
     }
 }
 
-export async function generatePresignedUrl(key) {
+export async function generatePresignedUrl(key, bucketName) {
     const params = {
-        Bucket: BUCKET_NAME,
+        Bucket: bucketName,
         Key: key,
         Expires: 60 * 60,
     };
@@ -49,9 +47,9 @@ export async function generatePresignedUrl(key) {
     }
 }
 
-export async function deleteFile(key) {
+export async function deleteFile(key, bucketName) {
     const params = {
-        Bucket: BUCKET_NAME,
+        Bucket: bucketName,
         Key: key,
     };
 

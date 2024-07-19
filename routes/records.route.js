@@ -16,6 +16,8 @@ dotenv.config();
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
+const BUCKET_NAME = "easytrack-records";
+
 // GET a record
 router.get("/api/records/:id", verifyToken, async (req, res) => {
     const recordId = req.params.id;
@@ -32,7 +34,7 @@ router.get("/api/records/:id", verifyToken, async (req, res) => {
 
             if (key) {
                 try {
-                    const url = await generatePresignedUrl(key);
+                    const url = await generatePresignedUrl(key, BUCKET_NAME);
                     earningBreakdown.supportingImage = url;
     
                     processedEarningBreakdowns.push({
@@ -87,7 +89,7 @@ router.get("/api/records", verifyToken, async (req, res) => {
 
                 if (key) {
                     try {
-                        const url = await generatePresignedUrl(key);
+                        const url = await generatePresignedUrl(key, BUCKET_NAME);
                         earningBreakdown.supportingImage = url;
     
                         processedEarningBreakdowns.push({
@@ -140,7 +142,7 @@ router.post("/api/records", verifyToken, upload.any(), async (req, res) => {
 
         if (recordFile) {
             const key = uuidv4() + "-" + recordFile.originalname;
-            await uploadFile(recordFile, key).then((result) => {
+            await uploadFile(recordFile, key, BUCKET_NAME).then((result) => {
                 if (result === "File uploaded successfully") {  
                     const newEarningBreakdown = {
                         name: recordData[`earningBreakdown-name-${i}`],
@@ -209,7 +211,7 @@ router.delete("/api/records/:id", verifyToken, async (req, res) => {
         const response = await Promise.all(allEarningBreakdowns.map(async (earningBreakdown) => {
             const key = earningBreakdown.supportingImage;
             if (key) {
-                return deleteFile(key).then((result) => {
+                return deleteFile(key, BUCKET_NAME).then((result) => {
                     if (result === "File deleted successfully") {
                         return;
                     } else {
@@ -258,7 +260,7 @@ router.patch("/api/records/:id", verifyToken, upload.any(), async (req, res) => 
             const recordFile = recordFiles.filter((file) => file.fieldname === `earningBreakdown-supportingImage-${i}`)[0];
             if (recordFile) {
                 const key = uuidv4() + "-" + recordFile.originalname;
-                await uploadFile(recordFile, key).then((result) => {
+                await uploadFile(recordFile, key, BUCKET_NAME).then((result) => {
                     if (result === "File uploaded successfully") {  
                         const newEarningBreakdown = {
                             name: recordData[`earningBreakdown-name-${i}`],
@@ -302,7 +304,7 @@ router.patch("/api/records/:id", verifyToken, upload.any(), async (req, res) => 
         
         if (prevKey && !currentSupportingImageKeys.includes(prevKey)) {
             console.log(`Deleting ${prevKey} from s3 bucket`);
-            await deleteFile(prevKey).then((result) => {
+            await deleteFile(prevKey, BUCKET_NAME).then((result) => {
                 if (result === "File deleted successfully") {
                     return;
                 } else {

@@ -8,8 +8,8 @@ import recordRouter from "./routes/records.route.js";
 import analyticsRouter from "./routes/analytics.route.js";
 import searchRouter from "./routes/search.route.js";
 import notificationRouter from "./routes/notification.route.js";
+import expenseRouter from "./routes/expenses.route.js";
 import cookieParser from "cookie-parser";
-import "./strategies/local-strategy.js";
 
 
 
@@ -37,6 +37,7 @@ app.use(recordRouter);
 app.use(analyticsRouter);
 app.use(searchRouter);
 app.use(notificationRouter);
+app.use(expenseRouter);
 
 // start the Express server
 app.listen(PORT, () => {
