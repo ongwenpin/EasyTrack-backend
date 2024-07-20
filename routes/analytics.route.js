@@ -7,7 +7,7 @@ const router = Router();
 
 dotenv.config();
 
-router.get("/api/analytics/dailyprofit", verifyToken, async (req, res) => {
+router.get("/api/analytics/dailyearning", verifyToken, async (req, res) => {
     const date = new Date();
     const records = await Record.find({
         date: date.toISOString().slice(0, 10),
@@ -36,7 +36,7 @@ router.get("/api/analytics/dailyprofit", verifyToken, async (req, res) => {
 })
 
 
-router.get("/api/analytics/weeklyprofit", verifyToken, async (req, res) => {
+router.get("/api/analytics/weeklyearning", verifyToken, async (req, res) => {
 
     const day = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
     
