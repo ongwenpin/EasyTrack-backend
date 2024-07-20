@@ -2,6 +2,7 @@ import { Router } from "express";
 import { Record } from "../models/recordModel.js";
 import dotenv from "dotenv";
 import { verifyToken } from "../middleware.js";
+import { Expense } from "../models/expenseModel.js";
 
 const router = Router();
 
@@ -12,27 +13,27 @@ router.get("/api/analytics/dailyearning", verifyToken, async (req, res) => {
     const records = await Record.find({
         date: date.toISOString().slice(0, 10),
     });
-    let branchProfits = { profit: 0 };
+    let branchEarnings = { earning: 0 };
 
     const distinctBranches = await Record.distinct("branch");
     
     for (let branch of distinctBranches) {
-        branchProfits[branch] = 0;
+        branchEarnings[branch] = 0;
     }
 
     records.forEach((record) => {
         const branch = record.branch;
         const earnings = record.totalEarnings;
 
-        if (!branchProfits[branch]) {
-            branchProfits[branch] = 0;
+        if (!branchEarnings[branch]) {
+            branchEarnings[branch] = 0;
         }
 
-        branchProfits[branch] += earnings;
-        branchProfits.profit += earnings;
+        branchEarnings[branch] += earnings;
+        branchEarnings.earning += earnings;
     })
 
-    return res.status(200).send(branchProfits);
+    return res.status(200).send(branchEarnings);
 })
 
 
@@ -42,7 +43,7 @@ router.get("/api/analytics/weeklyearning", verifyToken, async (req, res) => {
     
     const startDate = new Date(new Date().getTime() - (7 * 24 * 60 * 60 * 1000));
     const startDay = startDate.getDay();
-    const weeklyProfit = [];
+    const weeklyEarning = [];
 
     const distinctBranches = await Record.distinct("branch");
 
@@ -53,32 +54,32 @@ router.get("/api/analytics/weeklyearning", verifyToken, async (req, res) => {
             const records = await Record.find({
                 date: date.toISOString().slice(0, 10),
             });
-            let branchProfits = {day: dayName, profit: 0};
+            let branchEarnings = {day: dayName, earning: 0};
 
             for (let branch of distinctBranches) {
-                branchProfits[branch] = 0;
+                branchEarnings[branch] = 0;
             }
 
             records.forEach((record) => {
                 const branch = record.branch;
                 const earnings = record.totalEarnings;
                 
-                if (!branchProfits[branch]) {
-                    branchProfits[branch] = 0;
+                if (!branchEarnings[branch]) {
+                    branchEarnings[branch] = 0;
                 }
                 
-                branchProfits[branch] += earnings;
-                branchProfits.profit += earnings;
+                branchEarnings[branch] += earnings;
+                branchEarnings.earning += earnings;
             });
 
-            weeklyProfit.push(branchProfits);
+            weeklyEarning.push(branchEarnings);
         } catch (err) {
             return res.status(500).send("Error getting weekly profit.");
         }
     }
 
 
-    return res.status(200).send(weeklyProfit);
+    return res.status(200).send(weeklyEarning );
     
 });
 
@@ -88,7 +89,7 @@ router.get("/api/analytics/annualprofit", verifyToken, async (req, res) => {
 
     const year = new Date().getFullYear();
 
-    const annualProfit = [];
+    const annualEarning = [];
 
     for (let i = 0; i < 12; i++) {
 
@@ -98,34 +99,57 @@ router.get("/api/analytics/annualprofit", verifyToken, async (req, res) => {
                 const records = await Record.find({
                     date: { $gte: new Date(year, i, 1), $lt: new Date(year + 1, 0, 1) },
                 });
-                let profit = 0;
+                let earning = 0;
                 records.forEach((record) => {
                     const date = new Date(record.date);
                     if (date.getFullYear() === year && date.getMonth() === i) {
-                        profit += record.totalEarnings;
+                        earning += record.totalEarnings;
                     }
                 });
-                annualProfit.push({ month: month[i], profit: profit });
+
+                const expenses = await Expense.find({
+                    date: { $gte: new Date(year, i, 1), $lt: new Date(year + 1, 0, 1) },
+                });
+                let expense = 0;
+                expenses.forEach((record) => {
+                    const date = new Date(record.date);
+                    if (date.getFullYear() === year && date.getMonth() === i) {
+                        expense += record.expenseAmount;
+                    }
+                });
+                annualEarning.push({ month: month[i], earning: earning, expense: expense, profit: earning - expense });
 
             } else {
                 const records = await Record.find({
                     date: { $gte: new Date(year, i, 1), $lt: new Date(year, i + 1, 1) },
                 });
-                let profit = 0;
+                let earning = 0;
                 records.forEach((record) => {
                     const date = new Date(record.date);
                     if (date.getFullYear() === year && date.getMonth() === i) {
-                        profit += record.totalEarnings;
+                        earning += record.totalEarnings;
                     }
                 });
-                annualProfit.push({ month: month[i], profit: profit });
+
+                const expenses = await Expense.find({
+                    date: { $gte: new Date(year, i, 1), $lt: new Date(year, i + 1, 1) },
+                });
+                let expense = 0;
+                expenses.forEach((record) => {
+                    const date = new Date(record.date);
+                    if (date.getFullYear() === year && date.getMonth() === i) {
+                        expense += record.expenseAmount;
+                    }
+                });
+
+                annualEarning.push({ month: month[i], earning: earning, expense: expense, profit: earning - expense });
             }
         } catch (err) {
             return res.status(500).send("Error getting annual profit.");
         }
     }
 
-    return res.status(200).send(annualProfit);
+    return res.status(200).send(annualEarning);
 
 
 });
