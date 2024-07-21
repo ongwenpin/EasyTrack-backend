@@ -39,10 +39,11 @@ router.get("/api/analytics/dailyearning", verifyToken, async (req, res) => {
 
 router.get("/api/analytics/weeklyearning", verifyToken, async (req, res) => {
 
-    const day = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+    const day = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
     
-    const startDate = new Date(new Date().getTime() - (7 * 24 * 60 * 60 * 1000));
-    const startDay = startDate.getDay();
+    const currDate = new Date();
+    const currDay = currDate.getDay();
+    const startDate = new Date(currDate.getTime() - (currDay * 24 * 60 * 60 * 1000));
     const weeklyEarning = [];
 
     const distinctBranches = await Record.distinct("branch");
@@ -50,7 +51,7 @@ router.get("/api/analytics/weeklyearning", verifyToken, async (req, res) => {
     for (let i = 0; i < 7; i++) {
         try {
             const date = new Date(startDate.getTime() + (i * 24 * 60 * 60 * 1000));
-            const dayName = day[(startDay + i - 1) % 7];
+            const dayName = day[i];
             const records = await Record.find({
                 date: date.toISOString().slice(0, 10),
             });
@@ -78,8 +79,7 @@ router.get("/api/analytics/weeklyearning", verifyToken, async (req, res) => {
         }
     }
 
-
-    return res.status(200).send(weeklyEarning );
+    return res.status(200).send(weeklyEarning);
     
 });
 
