@@ -154,6 +154,4 @@ router.get("/api/analytics/annualprofit", verifyToken, async (req, res) => {
 
 });
 
-
-
 export default router;
