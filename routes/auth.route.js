@@ -43,6 +43,21 @@ router.post("/api/verify/:verify_key", async (req, res) => {
     }
 });
 
+// Send a new verification code
+router.post("/api/verify", async (req, res) => {
+    const {username} = req.body;
+    try {
+        const currUser = await User.findOne({username: username});
+        if (currUser.verified) {
+            return res.status(404).send("User already verified");
+        }
+        generateNewVerificationCode(currUser);
+        return res.status(200).send("Verification code sent");
+    } catch (err) {
+        return res.status(500).send("Internal server error: Cannot send verification code");
+    }
+});
+
 // Authenticate a user login
 router.post("/api/auth", async (req, res) => {
     
