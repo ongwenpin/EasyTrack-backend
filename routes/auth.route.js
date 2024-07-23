@@ -48,7 +48,6 @@ router.post("/api/auth", async (req, res) => {
     
     try {
         const {username, password} = req.body;
-        //const validUser = await User.findOne({username: username});
         const validUser = await UserAuth.findOne({username: username});
         if (!validUser) {
             return res.status(404).json({message:"User not found"});
@@ -57,16 +56,15 @@ router.post("/api/auth", async (req, res) => {
         if (!validPassword) {
             return res.status(401).json({message:"Wrong credentials"});
         }
-        const token = jwt.sign({id: validUser._id}, process.env.JWT_SECRET);
-        //const {password: userPassword, ...userData} = validUser.toObject();
 
+        const refresh_token_id = crypto.randomBytes(16).toString('hex');
+        
+        const userAuth = await UserAuth.findOneAndUpdate({username: validUser.username}, {refreshToken: refresh_token_id}, {new: true});
+        const token = jwt.sign({id: userAuth.userID, refresh_id: refresh_token_id}, process.env.JWT_SECRET);
         const userInfo = await User.findOne({_id: validUser.userID});
-
-
         res.cookie('refresh_token', token, {httpOnly: true, maxAge: 1000 * 60 * 60 * 24, sameSite: "strict"});
-
+        //res.cookie('refresh_token', token, {httpOnly: true, maxAge: 1000 * 60 * 60 * 24, sameSite: "none", secure: true});
         return res.status(200).send(userInfo);
-
     } catch (err) {
         return res.status(500).send(err.message);
     }
@@ -77,7 +75,7 @@ router.post("/api/auth", async (req, res) => {
 // Log out a user
 router.post("/api/logout", async (req, res) => {
     const username = req.body.username;
-    UserAuth.findOneAndUpdate({username: username}, {accessToken: ""}, {new: true})
+    UserAuth.findOneAndUpdate({username: username}, {accessToken: "", refreshToken: ""}, {new: true})
         .then(() => {
             res.clearCookie('refresh_token');
             res.clearCookie('access_token');
@@ -104,16 +102,25 @@ router.get("/api/auth/status", async (req, res) => {
 router.get("/api/auth/access", async (req, res) => {
     const getToken = req.cookies.refresh_token;
     // Verify token
-    jwt.verify(getToken, process.env.JWT_SECRET, (err, success) => {
+    jwt.verify(getToken, process.env.JWT_SECRET, async (err, success) => {
         if (err) {
             return res.status(401).send("Unauthorized");
         }
+
+        const {refresh_id, id} = success;
+
+        const auth = await UserAuth.findOne({refreshToken: refresh_id, userID: id});
+        if (!auth) {
+            return res.status(401).send("Unauthorized");
+        }
+
         const access_token_id = crypto.randomBytes(16).toString('hex');
 
-        UserAuth.findOneAndUpdate({_id: success.id}, {accessToken: access_token_id}, {new: true})
+        UserAuth.findOneAndUpdate({userID: id}, {accessToken: access_token_id}, {new: true})
             .then((userAuth) => {
                 const token = jwt.sign({access_id: access_token_id, id: userAuth.userID }, process.env.JWT_SECRET);
                 res.cookie('access_token', token, {httpOnly: true, maxAge: 1000 * 60 * 60, sameSite: "strict"});
+                //res.cookie('access_token', token, {httpOnly: true, maxAge: 1000 * 60 * 60, sameSite: "none", secure: true});
                 return res.status(200).send("Access token granted");
             }).
             catch((err) => {

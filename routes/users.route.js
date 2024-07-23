@@ -42,7 +42,7 @@ router.post("/api/signup", async (req, res) => {
 
     newUser.save()
         .then((user) =>  {
-            const newUserAuth = new UserAuth({username: userData.username, password: hashedPassword, userID: user._id});
+            const newUserAuth = new UserAuth({username: userData.username, password: hashedPassword, userID: user._id, role: userData.role});
             newUserAuth.save()
         })
         .then(() => {
@@ -69,7 +69,7 @@ router.post("/api/users", verifyToken, async (req, res) => {
 
     newUser.save()
         .then((user) =>  {
-            const newUserAuth = new UserAuth({username: userData.username, password: hashedPassword, userID: user._id});
+            const newUserAuth = new UserAuth({username: userData.username, password: hashedPassword, userID: user._id, role: userData.role});
             newUserAuth.save()
         })
         .then(() => {

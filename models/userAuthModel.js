@@ -24,7 +24,12 @@ const UserAuthSchema = new Schema({
     userID: {
         type: Schema.Types.ObjectId,
         required: true
-    }
+    },
+    role: {
+        type: Schema.Types.String,
+        default: 'user',
+        required: true
+    },
 
 });
 
