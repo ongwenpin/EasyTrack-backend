@@ -10,9 +10,9 @@ dotenv.config();
 
 // Get daily earnings for a specific date
 router.get("/api/analytics/dailyearning/:date", verifyToken, async (req, res) => {
-    const date = req.params.date;
+    const date = new Date(req.params.date).toISOString().slice(0, 10);
     const records = await Record.find({
-        date: new Date(date).toISOString().slice(0, 10),
+        date: date,
     });
     let branchEarnings = { earning: 0 };
 
@@ -33,7 +33,6 @@ router.get("/api/analytics/dailyearning/:date", verifyToken, async (req, res) =>
         branchEarnings[branch] += earnings;
         branchEarnings.earning += earnings;
     })
-
     return res.status(200).send(branchEarnings);
 
 });
@@ -82,6 +81,62 @@ router.get("/api/analytics/weeklyearning/:date", verifyToken, async (req, res) =
 
     return res.status(200).send(weeklyEarning);
     
+});
+
+router.get("/api/analytics/monthlyprofit/", verifyToken, async (req, res) => {
+
+    if (!req.query.month || !req.query.year) {
+        return res.status(400).send("Please provide month and year");
+    }
+
+    const month = parseInt(req.query.month);
+    const year = parseInt(req.query.year);
+
+    const monthlyEarning = {};
+
+    try {
+        if (month === 11) {
+            const records = await Record.find({
+                date: { $gte: new Date(year, month, 1), $lt: new Date(year + 1, 0, 1) },
+            });
+            const expenses = await Expense.find({
+                date: { $gte: new Date(year, month, 1), $lt: new Date(year + 1, 0, 1) },
+            });
+            const earning = records.reduce((acc, record) => {
+                return acc + record.totalEarnings;
+            }, 0);
+            const expense = expenses.reduce((acc, record) => {
+                return acc + record.expenseAmount;
+            }, 0);
+            monthlyEarning["earning"] = earning;
+            monthlyEarning["expense"] = expense;
+            monthlyEarning["profit"] = earning - expense;
+        } else {
+            const records = await Record.find({
+                date: { $gte: new Date(year, month, 1), $lt: new Date(year, month + 1, 1) },
+            });
+            const expenses = await Expense.find({
+                date: { $gte: new Date(year, month, 1), $lt: new Date(year, month + 1, 1) },
+            });
+            const earning = records.reduce((acc, record) => {
+                return acc + record.totalEarnings;
+            }, 0);
+            const expense = expenses.reduce((acc, record) => {
+                return acc + record.expenseAmount;
+            }, 0);
+            monthlyEarning["earning"] = earning;
+            monthlyEarning["expense"] = expense;
+            monthlyEarning["profit"] = earning - expense
+            
+        }
+
+        return res.status(200).send(monthlyEarning);
+        
+    } catch (err) {
+        return res.status(500).send("Error getting monthly earning.");
+    }
+
+
 });
 
 router.get("/api/analytics/annualprofit", verifyToken, async (req, res) => {
