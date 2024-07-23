@@ -8,10 +8,11 @@ const router = Router();
 
 dotenv.config();
 
-router.get("/api/analytics/dailyearning", verifyToken, async (req, res) => {
-    const date = new Date();
+// Get daily earnings for a specific date
+router.get("/api/analytics/dailyearning/:date", verifyToken, async (req, res) => {
+    const date = req.params.date;
     const records = await Record.find({
-        date: date.toISOString().slice(0, 10),
+        date: new Date(date).toISOString().slice(0, 10),
     });
     let branchEarnings = { earning: 0 };
 
@@ -34,14 +35,14 @@ router.get("/api/analytics/dailyearning", verifyToken, async (req, res) => {
     })
 
     return res.status(200).send(branchEarnings);
-})
 
+});
 
-router.get("/api/analytics/weeklyearning", verifyToken, async (req, res) => {
+router.get("/api/analytics/weeklyearning/:date", verifyToken, async (req, res) => {
 
     const day = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
     
-    const currDate = new Date();
+    const currDate = new Date(req.params.date);
     const currDay = currDate.getDay();
     const startDate = new Date(currDate.getTime() - (currDay * 24 * 60 * 60 * 1000));
     const weeklyEarning = [];
