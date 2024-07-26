@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { Record } from "../models/recordModel.js";
-import { verifyToken } from "../middleware.js";
+import { verifyToken } from "../middlewares/authentication.js";
 import dotenv from "dotenv";
 import multer from "multer";
 import { uploadFile, generatePresignedUrl, deleteFile } from "../utils/s3_functions.js";
@@ -303,7 +303,6 @@ router.patch("/api/records/:id", verifyToken, upload.any(), async (req, res) => 
         const prevKey = prevRecord.earningBreakdown[i].supportingImage;
         
         if (prevKey && !currentSupportingImageKeys.includes(prevKey)) {
-            console.log(`Deleting ${prevKey} from s3 bucket`);
             await deleteFile(prevKey, BUCKET_NAME).then((result) => {
                 if (result === "File deleted successfully") {
                     return;

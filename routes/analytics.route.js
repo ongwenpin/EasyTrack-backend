@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { Record } from "../models/recordModel.js";
 import dotenv from "dotenv";
-import { verifyToken } from "../middleware.js";
+import { verifyToken } from "../middlewares/authentication.js";
 import { Expense } from "../models/expenseModel.js";
 
 const router = Router();
@@ -10,30 +10,36 @@ dotenv.config();
 
 // Get daily earnings for a specific date
 router.get("/api/analytics/dailyearning/:date", verifyToken, async (req, res) => {
-    const date = new Date(req.params.date).toISOString().slice(0, 10);
-    const records = await Record.find({
-        date: date,
-    });
-    let branchEarnings = { earning: 0 };
 
-    const distinctBranches = await Record.distinct("branch");
-    
-    for (let branch of distinctBranches) {
-        branchEarnings[branch] = 0;
-    }
+    try {
+        const date = new Date(req.params.date);
+        const records = await Record.find({
+            date: date.toISOString().slice(0, 10),
+        });
+        let branchEarnings = { earning: 0 };
 
-    records.forEach((record) => {
-        const branch = record.branch;
-        const earnings = record.totalEarnings;
-
-        if (!branchEarnings[branch]) {
+        const distinctBranches = await Record.distinct("branch");
+        
+        for (let branch of distinctBranches) {
             branchEarnings[branch] = 0;
         }
 
-        branchEarnings[branch] += earnings;
-        branchEarnings.earning += earnings;
-    })
-    return res.status(200).send(branchEarnings);
+        records.forEach((record) => {
+            const branch = record.branch;
+            const earnings = record.totalEarnings;
+
+            if (!branchEarnings[branch]) {
+                branchEarnings[branch] = 0;
+            }
+
+            branchEarnings[branch] += earnings;
+            branchEarnings.earning += earnings;
+        })
+        return res.status(200).send(branchEarnings);
+    } catch (err) {
+        return res.status(500).send("Error getting daily profit.");
+    }
+    
 
 });
 

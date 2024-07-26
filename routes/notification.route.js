@@ -1,13 +1,14 @@
 import { Router } from "express";
 import dotenv from "dotenv";
 import { Notification } from "../models/notificationModel.js";
+import { verifyToken } from "../middlewares/authentication.js";
 
 const router = Router();
 
 dotenv.config();
 
 // GET all notifications for a user
-router.get('/api/notification/:username', async (req, res) => {
+router.get('/api/notification/:username', verifyToken, async (req, res) => {
     const username = req.params.username;
 
     try {
@@ -33,7 +34,7 @@ router.get('/api/notification/:username', async (req, res) => {
 // });
 
 // Remove all notifications for a user
-router.delete('/api/notification/:username', async (req, res) => {
+router.delete('/api/notification/:username', verifyToken, async (req, res) => {
     const username = req.params.username;
 
     try {
@@ -46,7 +47,7 @@ router.delete('/api/notification/:username', async (req, res) => {
 });
 
 // PATCH a notification
-router.patch('/api/notification/:id', async (req, res) => {
+router.patch('/api/notification/:id', verifyToken, async (req, res) => {
     const id = req.params.id;
     const notification = req.body;
 

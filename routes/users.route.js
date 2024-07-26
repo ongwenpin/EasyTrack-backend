@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { User } from "../models/userModel.js";
 import bcryptjs from "bcryptjs";
-import { verifyToken } from "../middleware.js";
+import { verifyToken } from "../middlewares/authentication.js";
 import { generateNewVerificationCode } from "../utils/verification.js";
 import dotenv from "dotenv";
 import { UserAuth } from "../models/userAuthModel.js";

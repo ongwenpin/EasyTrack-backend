@@ -4,7 +4,7 @@ import { uploadFile, generatePresignedUrl, deleteFile } from "../utils/s3_functi
 import { v4 as uuidv4 } from "uuid";
 import multer from "multer";
 import dotenv from "dotenv";
-import { verifyToken } from "../middleware.js";
+import { verifyToken } from "../middlewares/authentication.js";
 
 const router = Router();
 

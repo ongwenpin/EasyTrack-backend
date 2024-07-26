@@ -2,7 +2,7 @@ import { Router } from "express";
 import { Record } from "../models/recordModel.js";
 import { User } from "../models/userModel.js";
 import dotenv from "dotenv";
-import { verifyToken } from "../middleware.js";
+import { verifyToken } from "../middlewares/authentication.js";
 
 const router = Router();
 
