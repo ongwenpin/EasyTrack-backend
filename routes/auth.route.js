@@ -88,7 +88,7 @@ router.post("/api/auth", async (req, res) => {
 );
 
 // Log out a user
-router.post("/api/logout", async (req, res) => {
+router.post("/api/auth/logout", async (req, res) => {
     const username = req.body.username;
     UserAuth.findOneAndUpdate({username: username}, {accessToken: "", refreshToken: ""}, {new: true})
         .then(() => {
