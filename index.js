@@ -23,7 +23,7 @@ const MONGO_URL = process.env.ATLAS_URL;
 const corsOptions = {
     origin: "https://easy-track-frontend.vercel.app",
     //origin: "http://localhost:5173",
-    
+    credentials: true,
 };
 
 app.use(express.json());
