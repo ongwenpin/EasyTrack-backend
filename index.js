@@ -21,7 +21,7 @@ const PORT = 5050;
 const MONGO_URL = process.env.ATLAS_URL;
 
 const corsOptions = {
-    origin: "https://easytrack-frontend.onrender.com",
+    origin: "https://easy-track-frontend.vercel.app",
     //origin: "http://localhost:5173",
     
 };
