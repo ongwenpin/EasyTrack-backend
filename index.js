@@ -45,6 +45,10 @@ app.listen(PORT, () => {
     console.log(`Server listening on port ${PORT}`);
 });
 
+app.get("/api/test", (req, res) => {
+    return res.status(200).send("Backend Works!");
+});
+
 mongoose
 .connect(MONGO_URL)
 .then(() => {
