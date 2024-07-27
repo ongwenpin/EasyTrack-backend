@@ -22,7 +22,7 @@ const MONGO_URL = process.env.ATLAS_URL;
 
 const corsOptions = {
     origin: "https://easytrack-frontend.onrender.com",
-    credentials: true,
+    //origin: "http://localhost:5173",
     
 };
 
