@@ -20,15 +20,15 @@ const app = express();
 const PORT = 5050;
 const MONGO_URL = process.env.ATLAS_URL;
 
-// const corsOptions = {
-//     // origin: 'https://easytrack-frontend.onrender.com',
-//     origin: 'http://localhost:5173',
-//     credentials: true,
-// };
+const corsOptions = {
+    origin: "*",
+    credentials: true,
+    
+};
 
 app.use(express.json());
 
-//app.use(cors(corsOptions));
+app.use(cors(corsOptions));
 
 app.use(cookieParser());
 
