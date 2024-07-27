@@ -77,7 +77,7 @@ router.post("/api/auth", async (req, res) => {
         const userAuth = await UserAuth.findOneAndUpdate({username: validUser.username}, {refreshToken: refresh_token_id}, {new: true});
         const token = jwt.sign({id: userAuth.userID, refresh_id: refresh_token_id}, process.env.JWT_SECRET);
         const userInfo = await User.findOne({_id: validUser.userID});
-        res.cookie('refresh_token', token, {httpOnly: true, maxAge: 1000 * 60 * 60 * 24, sameSite: "strict"});
+        res.cookie('refresh_token', token, {httpOnly: true, maxAge: 1000 * 60 * 60 * 24, secure: true, sameSite: "none"});
         //res.cookie('refresh_token', token, {httpOnly: true, maxAge: 1000 * 60 * 60 * 24, sameSite: "none", secure: true});
         return res.status(200).send(userInfo);
     } catch (err) {
@@ -134,7 +134,7 @@ router.get("/api/auth/access", async (req, res) => {
         UserAuth.findOneAndUpdate({userID: id}, {accessToken: access_token_id}, {new: true})
             .then((userAuth) => {
                 const token = jwt.sign({access_id: access_token_id, id: userAuth.userID }, process.env.JWT_SECRET);
-                res.cookie('access_token', token, {httpOnly: true, maxAge: 1000 * 60 * 60, sameSite: "strict"});
+                res.cookie('access_token', token, {httpOnly: true, maxAge: 1000 * 60 * 60, secure: true, sameSite: "none"});
                 //res.cookie('access_token', token, {httpOnly: true, maxAge: 1000 * 60 * 60, sameSite: "none", secure: true});
                 return res.status(200).send("Access token granted");
             }).
