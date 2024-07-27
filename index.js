@@ -11,8 +11,6 @@ import notificationRouter from "./routes/notification.route.js";
 import expenseRouter from "./routes/expenses.route.js";
 import cookieParser from "cookie-parser";
 
-
-
 dotenv.config();
 
 const app = express();
@@ -21,8 +19,8 @@ const PORT = 5050;
 const MONGO_URL = process.env.ATLAS_URL;
 
 const corsOptions = {
-    origin: "https://easy-track-fe.vercel.app",
-    //origin: "http://localhost:5173",
+    //origin: "https://easy-track-fe.vercel.app",
+    origin: process.env.FRONTEND_URL,
     credentials: true,
 };
 

@@ -29,7 +29,7 @@ export async function generateNewVerificationCode(userData) {
         transporter.sendMail({
             to: userData.email,
             subject: "EasyTrack Account Verification",
-            text: `Click on the link to verify your account: http://localhost:5173/verify/${verificationCode}`,
+            text: `Click on the link to verify your account: ${process.env.FRONTEND_URL}/verify/${verificationCode}`,
         })
             .then(() => console.log("Email sent successfully"))
             .catch((err) => console.log(err));
