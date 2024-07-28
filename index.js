@@ -9,6 +9,7 @@ import analyticsRouter from "./routes/analytics.route.js";
 import searchRouter from "./routes/search.route.js";
 import notificationRouter from "./routes/notification.route.js";
 import expenseRouter from "./routes/expenses.route.js";
+import branchRouter from "./routes/branches.route.js";
 import cookieParser from "cookie-parser";
 
 dotenv.config();
@@ -19,7 +20,6 @@ const PORT = 5050;
 const MONGO_URL = process.env.ATLAS_URL;
 
 const corsOptions = {
-    //origin: "https://easy-track-fe.vercel.app",
     origin: process.env.FRONTEND_URL,
     credentials: true,
 };
@@ -37,6 +37,7 @@ app.use(analyticsRouter);
 app.use(searchRouter);
 app.use(notificationRouter);
 app.use(expenseRouter);
+app.use(branchRouter);
 
 // start the Express server
 app.listen(PORT, () => {

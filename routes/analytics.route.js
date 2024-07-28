@@ -3,6 +3,7 @@ import { Record } from "../models/recordModel.js";
 import dotenv from "dotenv";
 import { verifyToken } from "../middlewares/authentication.js";
 import { Expense } from "../models/expenseModel.js";
+import { Branch } from "../models/branchModel.js";
 
 const router = Router();
 
@@ -18,10 +19,11 @@ router.get("/api/analytics/dailyearning/:date", verifyToken, async (req, res) =>
         });
         let branchEarnings = { earning: 0 };
 
-        const distinctBranches = await Record.distinct("branch");
+        //const distinctBranches = await Record.distinct("branch");
+        const distinctBranches = await Branch.find();
         
         for (let branch of distinctBranches) {
-            branchEarnings[branch] = 0;
+            branchEarnings[branch.branchName] = 0;
         }
 
         records.forEach((record) => {
@@ -52,7 +54,8 @@ router.get("/api/analytics/weeklyearning/:date", verifyToken, async (req, res) =
     const startDate = new Date(currDate.getTime() - (currDay * 24 * 60 * 60 * 1000));
     const weeklyEarning = [];
 
-    const distinctBranches = await Record.distinct("branch");
+    //const distinctBranches = await Record.distinct("branch");
+    const distinctBranches = await Branch.find();
 
     for (let i = 0; i < 7; i++) {
         try {
@@ -64,7 +67,7 @@ router.get("/api/analytics/weeklyearning/:date", verifyToken, async (req, res) =
             let branchEarnings = {day: dayName, earning: 0};
 
             for (let branch of distinctBranches) {
-                branchEarnings[branch] = 0;
+                branchEarnings[branch.branchName] = 0;
             }
 
             records.forEach((record) => {
