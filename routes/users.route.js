@@ -10,6 +10,21 @@ const router = Router();
 
 dotenv.config();
 
+// Check for username availability
+router.get("/api/signup/:username", async (req, res) => {
+    try {
+        const username = req.params.username;
+        const user = await User.findOne({username: username});
+        if (user) {
+            return res.status(200).send({availability: false, message: "Username not available. Please choose another username"});
+        } else {
+            return res.status(200).send({availability: true, message: "Username available"});
+        }
+    } catch (err) {
+        return res.status(500).send("Internal Server Error: Cannot check username availability");
+    }
+});
+
 // GET all users
 router.get("/api/users", verifyToken, async (req, res) => {
     try {
